@@ -10,7 +10,16 @@ namespace Ombi.Store.Context.MySql
             if (_created) return;
             _created = true;
 
-            Database.Migrate();
+            try
+            {
+                Database.Migrate();
+            }
+            catch (System.InvalidOperationException)
+            {
+            }
+            catch (System.Exception)
+            {
+            }
         }
 
         public override void Dispose()
