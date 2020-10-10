@@ -9,6 +9,7 @@ using Ombi.Schedule.Jobs.Emby;
 using Ombi.Schedule.Jobs.Ombi;
 using Ombi.Schedule.Jobs.Plex;
 using Ombi.Schedule.Jobs.Radarr;
+using Ombi.Schedule.Jobs.Ldap;
 using Quartz;
 
 namespace Ombi.Controllers.V1
@@ -99,6 +100,17 @@ namespace Ombi.Controllers.V1
         public async Task<bool> EmbyUserImporter()
         {
             await OmbiQuartz.TriggerJob(nameof(IEmbyUserImporter), "Emby");
+            return true;
+        }
+
+        /// <summary>
+        /// Runs the LDAP User importer
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("ldapuserimporter")]
+        public async Task<bool> LdapUserImporter()
+        {
+            await OmbiQuartz.TriggerJob(nameof(ILdapUserImporter), "LDAP");
             return true;
         }
 

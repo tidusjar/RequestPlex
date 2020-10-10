@@ -13,13 +13,13 @@
                     Import Plex Users</mat-checkbox>
                 </div>
             </div>
-            
+
             <div class="form-group">
                 <mat-checkbox id="importAdmin" [(ngModel)]="settings.importPlexAdmin">Import Plex Admin</mat-checkbox>
                 </div>
             <div *ngIf="plexUsers">
                 <p>Plex Users excluded from Import</p>
-                
+
                 <p-autoComplete [(ngModel)]="bannedPlexUsers" [suggestions]="filteredPlexUsers" [multiple]="true" field="username" (completeMethod)="filterPlexList($event)"></p-autoComplete>
             </div>
         </div>
@@ -27,13 +27,19 @@
             <div class="form-group">
                 <mat-checkbox id="importEmbyUsers" [(ngModel)]="settings.importEmbyUsers">Import Emby Users</mat-checkbox>
             </div>
-            
+
             <div *ngIf="embyUsers">
                 <p>Emby Users excluded from Import</p>
-                
+
                 <p-autoComplete [(ngModel)]="bannedEmbyUsers" [suggestions]="filteredEmbyUsers" [multiple]="true" field="username" (completeMethod)="filterEmbyList($event)"></p-autoComplete>
             </div>
 
+        </div>
+
+        <div *ngIf="ldapEnabled">
+            <div class="form-group">
+                <mat-checkbox id="importLdapUsers" [(ngModel)]="settings.importLdapUsers">Import LDAP Users</mat-checkbox>
+            </div>
         </div>
     </div>
     <div class="col-md-6">
@@ -71,7 +77,7 @@
         </div>
         <div><button type="button" [disabled]="!enableImportButton" (click)="runImporter()" class="mat-focus-indicator mat-stroked-button mat-raised-button mat-button-base">
             Run Importer<div matripple class="mat-ripple mat-button-ripple" ng-reflect-disabled="false" ng-reflect-centered="false" ng-reflect-trigger="[object HTMLButtonElement]"></div><div class="mat-button-focus-overlay"></div></button>
-        </div>     
+        </div>
         <div class="md-form-field" style="margin-top:1em;"></div>
 </fieldset>
 </div>

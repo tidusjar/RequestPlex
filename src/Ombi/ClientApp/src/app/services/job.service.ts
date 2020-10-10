@@ -31,6 +31,10 @@ export class JobService extends ServiceHelpers {
         return this.http.post<boolean>(`${this.url}embyUserImporter/`, {headers: this.headers});
     }
 
+    public runLdapImporter(): Observable<boolean> {
+        return this.http.post<boolean>(`${this.url}ldapUserImporter/`, {headers: this.headers});
+    }
+
     public runPlexCacher(): Observable<boolean> {
         return this.http.post<boolean>(`${this.url}plexcontentcacher/`, {headers: this.headers});
     }

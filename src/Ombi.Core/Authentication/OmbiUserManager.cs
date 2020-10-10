@@ -26,12 +26,14 @@
 #endregion
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Novell.Directory.Ldap;
 using Ombi.Api.Emby;
 using Ombi.Api.Plex;
 using Ombi.Api.Plex.Models;
@@ -49,19 +51,52 @@ namespace Ombi.Core.Authentication
             IPasswordHasher<OmbiUser> passwordHasher, IEnumerable<IUserValidator<OmbiUser>> userValidators,
             IEnumerable<IPasswordValidator<OmbiUser>> passwordValidators, ILookupNormalizer keyNormalizer,
             IdentityErrorDescriber errors, IServiceProvider services, ILogger<UserManager<OmbiUser>> logger, IPlexApi plexApi,
-            IEmbyApiFactory embyApi, ISettingsService<EmbySettings> embySettings, ISettingsService<AuthenticationSettings> auth)
+            IEmbyApiFactory embyApi, ISettingsService<EmbySettings> embySettings, ISettingsService<AuthenticationSettings> auth,
+            ILdapUserManager ldapUserManager, ISettingsService<UserManagementSettings> userManagementSettings)
             : base(store, optionsAccessor, passwordHasher, userValidators, passwordValidators, keyNormalizer, errors, services, logger)
         {
             _plexApi = plexApi;
             _embyApi = embyApi;
             _embySettings = embySettings;
             _authSettings = auth;
+            _ldapUserManager = ldapUserManager;
+            _userManagementSettings = userManagementSettings;
         }
 
         private readonly IPlexApi _plexApi;
         private readonly IEmbyApiFactory _embyApi;
+        private readonly ILdapUserManager _ldapUserManager;
         private readonly ISettingsService<EmbySettings> _embySettings;
         private readonly ISettingsService<AuthenticationSettings> _authSettings;
+        private readonly ISettingsService<UserManagementSettings> _userManagementSettings;
+
+        public async Task<OmbiUser> FindUser(string userName)
+        {
+            var user = await FindByNameAsync(userName);
+            if (user != null)
+            {
+                return user;
+            }
+            user = await FindByEmailAsync(userName);
+            if (user != null)
+            {
+                user.EmailLogin = true;
+                return user;
+            }
+
+            var ldapSettings = await _ldapUserManager.GetSettings();
+            if (!(ldapSettings.IsEnabled && ldapSettings.CreateUsersAtLogin))
+            {
+                return null;
+            }
+
+            var ldapUser = await _ldapUserManager.LocateLdapUser(userName);
+            if (ldapUser == null)
+            {
+                return null;
+            }
+            return await CreateOmbiUserFromLdapEntry(ldapUser);
+        }
 
         public override async Task<bool> CheckPasswordAsync(OmbiUser user, string password)
         {
@@ -82,6 +117,10 @@ namespace Ombi.Core.Authentication
             if (user.UserType == UserType.EmbyUser || user.UserType == UserType.EmbyConnectUser)
             {
                 return await CheckEmbyPasswordAsync(user, password);
+            }
+            if (user.UserType == UserType.LdapUser)
+            {
+                return await CheckLdapPasswordAsync(user, password);
             }
             return false;
         }
@@ -184,6 +223,43 @@ namespace Ombi.Core.Authentication
                 }
             }
             return false;
+        }
+
+        private async Task<bool> CheckLdapPasswordAsync(OmbiUser user, string password)
+        {
+            var ldapSettings = await _ldapUserManager.GetSettings();
+            if (!ldapSettings.IsEnabled)
+            {
+                return false;
+            }
+
+            return await _ldapUserManager.Authenticate(user, password);
+        }
+
+        public async Task<OmbiUser> CreateOmbiUserFromLdapEntry(LdapEntry entry)
+        {
+            var newUser = await _ldapUserManager.LdapEntryToOmbiUser(entry);
+            var userManagementSettings = await _userManagementSettings.GetSettingsAsync();
+
+            var result = await CreateAsync(newUser);
+            if (!result.Succeeded)
+            {
+                foreach (var identityError in result.Errors)
+                {
+                    Logger.LogError(LoggingEvents.Authentication, identityError.Description);
+                }
+                return null;
+            }
+
+            if (userManagementSettings.DefaultRoles.Any())
+            {
+                foreach (var defaultRole in userManagementSettings.DefaultRoles)
+                {
+                    await AddToRoleAsync(newUser, defaultRole);
+                }
+            }
+
+            return newUser;
         }
     }
 }

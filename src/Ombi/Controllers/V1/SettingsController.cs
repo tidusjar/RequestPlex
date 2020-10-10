@@ -427,6 +427,28 @@ namespace Ombi.Controllers.V1
         }
 
         /// <summary>
+        /// Save the LDAP settings.
+        /// </summary>
+        /// <param name="settings">The settings.</param>
+        /// <returns></returns>
+        [HttpPost("ldap")]
+        public async Task<bool> LdapSettings([FromBody] LdapSettings settings)
+        {
+            return await Save(settings);
+        }
+
+        /// <summary>
+        /// Gets the LDAP Settings.
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("ldap")]
+        [AllowAnonymous]
+        public async Task<LdapSettings> LdapSettings()
+        {
+            return await Get<LdapSettings>();
+        }
+
+        /// <summary>
         /// Save the Radarr settings.
         /// </summary>
         /// <param name="settings">The settings.</param>

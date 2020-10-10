@@ -173,6 +173,21 @@ export interface IAuthenticationSettings extends ISettings {
   enableOAuth: boolean;
 }
 
+export interface ILdapSettings extends ISettings {
+  isEnabled: boolean;
+  hostname: string;
+  port: number;
+  baseDn: string;
+  useSsl: boolean;
+  useStartTls: boolean;
+  skipSslVerify: boolean;
+  bindUserDn: string;
+  bindUserPassword: string;
+  usernameAttribute: string;
+  searchFilter: string;
+  createUsersAtLogin: boolean;
+}
+
 export interface ICustomPage extends ISettings {
   enabled: boolean;
   fontAwesomeIcon: string;
@@ -184,6 +199,7 @@ export interface IUserManagementSettings extends ISettings {
   importPlexUsers: boolean;
   importPlexAdmin: boolean;
   importEmbyUsers: boolean;
+  importLdapUsers: boolean;
   defaultRoles: string[];
   movieRequestLimit: number;
   episodeRequestLimit: number;

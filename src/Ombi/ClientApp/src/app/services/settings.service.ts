@@ -38,6 +38,7 @@ import {
     IVoteSettings,
     ITwilioSettings,
     IWebhookNotificationSettings,
+    ILdapSettings,
 } from "../interfaces";
 
 import { ServiceHelpers } from "./service.helpers";
@@ -122,6 +123,14 @@ export class SettingsService extends ServiceHelpers {
 
     public saveAuthentication(settings: IAuthenticationSettings): Observable<boolean> {
         return this.http.post<boolean>(`${this.url}/Authentication`, JSON.stringify(settings), {headers: this.headers});
+    }
+
+    public getLdap(): Observable<ILdapSettings> {
+        return this.http.get<ILdapSettings>(`${this.url}/ldap`, {headers: this.headers});
+    }
+
+    public saveLdap(settings: ILdapSettings): Observable<boolean> {
+        return this.http.post<boolean>(`${this.url}/ldap`, JSON.stringify(settings), {headers: this.headers});
     }
 
     // Using http since we need it not to be authenticated to get the landing page settings

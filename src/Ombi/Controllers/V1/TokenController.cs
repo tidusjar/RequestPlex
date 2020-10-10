@@ -48,21 +48,11 @@ namespace Ombi.Controllers.V1
         {
             if (!model.UsePlexOAuth)
             {
-                var user = await _userManager.FindByNameAsync(model.Username);
-
+                var user = await _userManager.FindUser(model.Username);
                 if (user == null)
                 {
-                    // Could this be an email login?
-                    user = await _userManager.FindByEmailAsync(model.Username);
-
-                    if (user == null)
-                    {
-                        return new UnauthorizedResult();
-                    }
-
-                    user.EmailLogin = true;
+                    return new UnauthorizedResult();
                 }
-
 
                 // Verify Password
                 if (await _userManager.CheckPasswordAsync(user, model.Password))
@@ -184,17 +174,11 @@ namespace Ombi.Controllers.V1
             var account = await _plexOAuthManager.GetAccount(accessToken);
 
             // Get the ombi user
-            var user = await _userManager.FindByNameAsync(account.user.username);
+            var user = await _userManager.FindUser(account.user.username);
 
             if (user == null)
             {
-                // Could this be an email login?
-                user = await _userManager.FindByEmailAsync(account.user.email);
-
-                if (user == null)
-                {
-                    return new UnauthorizedResult();
-                }
+                return new UnauthorizedResult();
             }
 
             return await CreateToken(true, user);
@@ -225,17 +209,11 @@ namespace Ombi.Controllers.V1
         [HttpPost("requirePassword")]
         public async Task<bool> DoesUserRequireAPassword([FromBody] UserAuthModel model)
         {
-            var user = await _userManager.FindByNameAsync(model.Username);
+            var user = await _userManager.FindUser(model.Username);
 
             if (user == null)
             {
-                // Could this be an email login?
-                user = await _userManager.FindByEmailAsync(model.Username);
-
-                if (user == null)
-                {
-                    return true;
-                }
+                return true;
             }
 
             var requires = await _userManager.RequiresPassword(user);

@@ -31,12 +31,12 @@
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> Username </th>
                 <td mat-cell *matCellDef="let element"> {{element.userName}} </td>
         </ng-container>
-  
+
         <ng-container matColumnDef="alias">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> Alias </th>
                 <td mat-cell *matCellDef="let element"> {{element.alias}} </td>
         </ng-container>
-  
+
         <ng-container matColumnDef="email">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> Email </th>
                 <td mat-cell *matCellDef="let element"> {{element.emailAddress}} </td>
@@ -44,7 +44,7 @@
 
         <ng-container matColumnDef="remainingRequests">
                 <th mat-header-cell *matHeaderCellDef> Requests Remaining </th>
-                <td mat-cell *matCellDef="let u"> 
+                <td mat-cell *matCellDef="let u">
                         <div *ngIf="u.movieRequestQuota != null && u.movieRequestQuota.hasLimit">
                                 {{'UserManagment.MovieRemaining' | translate: {remaining: u.movieRequestQuota.remaining, total: u.movieRequestLimit} }}
                         </div>
@@ -59,7 +59,7 @@
 
         <ng-container matColumnDef="nextRequestDue">
                 <th mat-header-cell *matHeaderCellDef>  Next Request Due </th>
-                <td mat-cell *matCellDef="let u"> 
+                <td mat-cell *matCellDef="let u">
                         <div *ngIf="u.movieRequestQuota != null && u.movieRequestQuota.remaining != u.movieRequestLimit">
                                     {{'UserManagment.MovieDue' | translate: {date: (u.movieRequestQuota.nextRequest | amLocal | amDateFormat: 'l LT')} }}
                         </div>
@@ -73,10 +73,10 @@
           </ng-container>
           <ng-container matColumnDef="lastLoggedIn">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>  Last Logged In </th>
-                <td mat-cell *matCellDef="let u"> 
+                <td mat-cell *matCellDef="let u">
                         <span *ngIf="u.lastLoggedIn">
                                         {{u.lastLoggedIn  | amLocal | amDateFormat: 'l LT'}}
-                        </span>                
+                        </span>
                         <span *ngIf="!u.lastLoggedIn">
                                         Not logged in yet!
                         </span> </td>
@@ -87,12 +87,13 @@
                 <td mat-cell *matCellDef="let u">
                         <span *ngIf="u.userType === 1">Local User</span>
                         <span *ngIf="u.userType === 2">Plex User</span>
-                        <span *ngIf="u.userType === 3">Emby User</span> </td>
+                        <span *ngIf="u.userType === 3">Emby User</span>
+                        <span *ngIf="u.userType === 5">LDAP User</span> </td>
           </ng-container>
-  
+
           <ng-container matColumnDef="roles">
                 <th mat-header-cell *matHeaderCellDef> Roles </th>
-                <td mat-cell *matCellDef="let element"> 
+                <td mat-cell *matCellDef="let element">
                         <div *ngFor="let claim of element.claims">
                                 <span *ngIf="claim.enabled">{{claim.value}}</span>
                         </div>
@@ -112,7 +113,7 @@
                         <button *ngIf="!u.hasLoggedIn" mat-raised-button color="accent"  (click)="welcomeEmail(u)" [disabled]="!customizationSettings?.applicationUrl">Send Welcome Email</button>
                 </td>
           </ng-container>
-  
+
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
@@ -146,7 +147,7 @@
                 <input type="text" [(ngModel)]="bulkEpisodeLimit" class="form-control form-small form-control-custom " id="episodeRequestLimit" name="episodeRequestLimit" value="{{bulkEpisodeLimit}}">
             </div>
         </div>
-    
+
 <button type="button" class="btn btn-success-outline" (click)="bulkUpdate()">Update Users</button>
 </p-sidebar>
 </div>

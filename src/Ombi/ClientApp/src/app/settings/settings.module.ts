@@ -47,6 +47,7 @@ import { UpdateComponent } from "./update/update.component";
 import { UserManagementComponent } from "./usermanagement/usermanagement.component";
 import { VoteComponent } from "./vote/vote.component";
 import { WikiComponent } from "./wiki.component";
+import { LdapComponent } from "./ldap/ldap.component";
 
 import { SettingsMenuComponent } from "./settingsmenu.component";
 
@@ -95,6 +96,7 @@ const routes: Routes = [
     { path: "SickRage", component: SickRageComponent, canActivate: [AuthGuard] },
     { path: "Issues", component: IssuesComponent, canActivate: [AuthGuard] },
     { path: "Authentication", component: AuthenticationComponent, canActivate: [AuthGuard] },
+    { path: "Ldap", component: LdapComponent, canActivate: [AuthGuard] },
     { path: "Mobile", component: MobileComponent, canActivate: [AuthGuard] },
     { path: "MassEmail", component: MassEmailComponent, canActivate: [AuthGuard] },
     { path: "Newsletter", component: NewsletterComponent, canActivate: [AuthGuard] },
@@ -155,6 +157,7 @@ const routes: Routes = [
         TelegramComponent,
         IssuesComponent,
         AuthenticationComponent,
+        LdapComponent,
         MobileComponent,
         MassEmailComponent,
         NewsletterComponent,
