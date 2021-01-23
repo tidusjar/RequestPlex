@@ -6,15 +6,8 @@
   </mat-button-toggle-group>
 </div>
 
-<p-carousel *ngIf="!loadingFlag" [numVisible]="10" [numScroll]="10" [page]="0" [value]="discoverResults" [responsiveOptions]="responsiveOptions">
+<p-carousel #carousel [numVisible]="10" [numScroll]="10" [page]="0" [value]="discoverResults" [responsiveOptions]="responsiveOptions" (onPage)="newPage()">
     <ng-template let-result pTemplate="item">
         <discover-card [result]="result"></discover-card>
     </ng-template>
 </p-carousel>
-<div *ngIf="loadingFlag">
-    <p-carousel [numVisible]="10" [numScroll]="10" [page]="0" [value]="[0,1,2,3,4,5,6,7,8,9,10,11,12,13]" [responsiveOptions]="responsiveOptions">
-        <ng-template let-result pTemplate="item">
-            <p-skeleton  *ngIf="!fullyLoaded" width="100%" height="315px" borderRadius="16px" style="padding: 5px;"></p-skeleton>
-        </ng-template>
-    </p-carousel>
-</div>

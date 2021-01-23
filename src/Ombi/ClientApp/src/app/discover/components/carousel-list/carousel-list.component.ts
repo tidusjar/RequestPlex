@@ -1,9 +1,10 @@
-import { Component, OnInit, Input } from "@angular/core";
+import { Component, OnInit, Input, ViewChild } from "@angular/core";
 import { DiscoverOption, IDiscoverCardResult } from "../../interfaces";
 import { ISearchMovieResult, ISearchTvResult, RequestType } from "../../../interfaces";
 import { SearchV2Service } from "../../../services";
 import { StorageService } from "../../../shared/storage/storage-service";
 import { MatButtonToggleChange } from '@angular/material/button-toggle';
+import { Carousel } from 'primeng/carousel';
 
 export enum DiscoverType {
     Upcoming,
@@ -19,6 +20,7 @@ export enum DiscoverType {
 export class CarouselListComponent implements OnInit {
 
     @Input() public discoverType: DiscoverType;
+    @ViewChild('carousel', {static: false}) carousel: Carousel;
 
     public DiscoverOption = DiscoverOption;
     public discoverOptions: DiscoverOption = DiscoverOption.Combined;
@@ -33,6 +35,7 @@ export class CarouselListComponent implements OnInit {
         return "DiscoverOptions" + this.discoverType.toString();
     };
     private amountToLoad = 14;
+    private currentlyLoaded = 0;
 
     constructor(private searchService: SearchV2Service,
         private storageService: StorageService) {
@@ -61,6 +64,7 @@ export class CarouselListComponent implements OnInit {
     }
 
     public async ngOnInit() {
+        this.currentlyLoaded = 0;
         const localDiscoverOptions = +this.storageService.get(this.mediaTypeStorageKey);
         if (localDiscoverOptions) {
             this.discoverOptions = DiscoverOption[DiscoverOption[localDiscoverOptions]];
@@ -91,12 +95,37 @@ export class CarouselListComponent implements OnInit {
         await this.switchDiscoverMode(event.value);
     }
 
+    public async newPage() {
+        // Note this is using the internal carousel APIs
+        // https://github.com/primefaces/primeng/blob/master/src/app/components/carousel/carousel.ts
+        var end = this.carousel._page >= (this.carousel.totalDots() - 1);
+        if (end) {
+            var moviePromise: Promise<void>;
+            var tvPromise: Promise<void>;
+            switch (this.discoverOptions) {
+                case DiscoverOption.Combined:
+                    moviePromise = this.loadMovies();
+                    tvPromise = this.loadTv();
+                    break;
+                case DiscoverOption.Movie:
+                    moviePromise = this.loadMovies();
+                    break;
+                case DiscoverOption.Tv:
+                    tvPromise = this.loadTv();
+                    break;
+            }
+            await moviePromise;
+            await tvPromise;
+
+            this.createModel();
+        }
+    }
+
     private async switchDiscoverMode(newMode: DiscoverOption) {
         if (this.discoverOptions === newMode) {
             return;
         }
         this.loading();
-        this.clear();
         this.discoverOptions = newMode;
         this.storageService.save(this.mediaTypeStorageKey, newMode.toString());
         await this.ngOnInit();
@@ -106,29 +135,31 @@ export class CarouselListComponent implements OnInit {
     private async loadMovies() {
         switch (this.discoverType) {
             case DiscoverType.Popular:
-                this.movies = await this.searchService.popularMoviesByPage(0, this.amountToLoad);
+                this.movies = await this.searchService.popularMoviesByPage(this.currentlyLoaded, this.amountToLoad);
                 break;
             case DiscoverType.Trending:
-                this.movies = await this.searchService.nowPlayingMoviesByPage(0, this.amountToLoad);
+                this.movies = await this.searchService.nowPlayingMoviesByPage(this.currentlyLoaded, this.amountToLoad);
                 break;
             case DiscoverType.Upcoming:
-                this.movies = await this.searchService.upcomingMoviesByPage(0, this.amountToLoad);
+                this.movies = await this.searchService.upcomingMoviesByPage(this.currentlyLoaded, this.amountToLoad);
                 break
         }
+        this.currentlyLoaded += this.amountToLoad;
     }
 
     private async loadTv() {
         switch (this.discoverType) {
             case DiscoverType.Popular:
-                this.tvShows = await this.searchService.popularTvByPage(0, this.amountToLoad);
+                this.tvShows = await this.searchService.popularTvByPage(this.currentlyLoaded, this.amountToLoad);
                 break;
             case DiscoverType.Trending:
-                this.tvShows = await this.searchService.trendingTvByPage(0, this.amountToLoad);
+                this.tvShows = await this.searchService.trendingTvByPage(this.currentlyLoaded, this.amountToLoad);
                 break;
             case DiscoverType.Upcoming:
-                this.tvShows = await this.searchService.anticipatedTvByPage(0, this.amountToLoad);
+                this.tvShows = await this.searchService.anticipatedTvByPage(this.currentlyLoaded, this.amountToLoad);
                 break
         }
+        this.currentlyLoaded += this.amountToLoad;
     }
 
     private createInitialModel() {
@@ -154,6 +185,7 @@ export class CarouselListComponent implements OnInit {
         }
 
         this.discoverResults.push(...tempResults);
+        this.carousel.ngAfterContentInit();
 
         this.finishLoading();
     }

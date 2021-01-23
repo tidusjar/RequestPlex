@@ -1,22 +1,3 @@
-<!-- <div class="card-spacing box" *ngIf="result" [style.display]="hide ? 'none' : 'block'">
-    <mat-card class="mat-elevation-z8 dark-card" [routerLink]="generateDetailsLink()">
-        <div class="ribbon {{getStatusClass()}} ribbon-top-right"><span>
-            {{getAvailbilityStatus()}}
-        </span></div>
-        <a>
-            <img id="cardImage" mat-card-image src="{{result.posterPath}}" class="card-poster" alt="{{result.title}}">
-        </a>
-        <mat-card-content  (click)="openDetails(result);">
-
-            <h6 *ngIf="result.title.length <= 20">{{result.title}}</h6>
-            <h6 *ngIf="result.title.length > 20" matTooltip="{{result.title}}">{{result.title | truncate:20}}</h6>
-            <div class="fade-text">
-            <small class="overview-text">{{result.overview | truncate: 75}}</small>
-        </div>
-        </mat-card-content>
-    </mat-card>
-</div> -->
-
 <p-skeleton  *ngIf="!fullyLoaded" width="100%" height="315px"></p-skeleton>
 
 <div *ngIf="fullyLoaded" class="ombi-card dark-card c" [style.display]="hide ? 'none' : 'block'">
