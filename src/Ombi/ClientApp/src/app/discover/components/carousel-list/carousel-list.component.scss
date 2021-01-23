@@ -91,8 +91,18 @@
 }
 ::ng-deep .discover-filter-button .mat-button-toggle-button:focus{
   outline:none;
+  color:#1b242f;
+}
+
+::ng-deep .button-active .mat-button-toggle-label-content{
+  color:#1b242f;
+  font-weight:600;
 }
 
 .card-skeleton {
    padding: 5px;
+}
+
+.p-carousel .p-carousel-content .p-carousel-prev, .p-carousel .p-carousel-content .p-carousel-next {
+  color:$ombi-active;
 }
