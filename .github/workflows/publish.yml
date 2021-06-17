@@ -1,0 +1,42 @@
+name: Publish Ombi
+
+on:
+  push:
+    branches: [ develop, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+
+    - uses: actions/cache@v2
+      with:
+        path: |
+          '**/node_modules'
+        key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+    - name: Install Frontend Deps
+      run: yarn --cwd ./src/Ombi/ClientApp install
+
+    - name: Build Frontend
+      run: yarn --cwd ./src/Ombi/ClientApp run build
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: angular_dist
+        path: ./src/Ombi/ClientApp/dist
+
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x' # SDK Version to use; x will use the latest version of the 3.1 channel
+    - run: dotnet test **/*.Tests.csproj
