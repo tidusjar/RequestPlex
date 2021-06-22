@@ -50,7 +50,7 @@ stages:
   - job:
     condition: and(succeeded(), eq(variables.isMain, true))
     steps:
-    - task: DownloadPipelineArtifact@2
+    - task: s@2
       inputs:
         buildType: 'current'
         targetPath: '$(System.ArtifactsDirectory)'

@@ -41,3 +41,69 @@ jobs:
       with:
         dotnet-version: '3.1.x' # SDK Version to use; x will use the latest version of the 3.1 channel
     - run: dotnet test **/*.Tests.csproj
+
+  publish:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        data: [
+          {runtime: "win10-x64", format: "zip", compression: "zip"},
+          {runtime: "win10-x86", format: "zip", compression: "zip"},
+          {runtime: "osx-x64", format: "tar.gz", compression: "tar"},
+          {runtime: "linux-x64", format: "tar.gz", compression: "tar"},
+          {runtime: "linux-arm", format: "tar.gz", compression: "tar"},
+          {runtime: "linux-arm64", format: "tar.gz", compression: "tar"}
+        ]
+    steps:
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.x' # SDK Version to use; x will use the latest version of the 3.1 channel
+      - run: dotnet publish -c "Release" -r "${{ matrix.data.runtime}}" -o "./src/Ombi/Output/${{ matrix.data.runtime }}" --self-contained true -p:PublishSingleFile=true
+      - uses: actions/download-artifact@v2
+        with:
+          name: angular_dist
+          path: ./src/Ombi/Output/${{ matrix.data.runtime }}/ClientApp/dist
+
+      - name: Archive Release
+        uses: thedoctor0/zip-release@master
+        with:
+          filename: '${{ matrix.data.runtime }}.${{ matrix.data.format }}'
+          type: ${{ matrix.data.compression }}
+          path: ./src/Ombi/Output/${{ matrix.data.runtime }}
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.data.runtime }}
+          path: ./src/Ombi/Output/${{ matrix.data.runtime }}.${{ matrix.data.format }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: win10-x64
+          path: ~/download/win10-x64
+      - name: Create Draft Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: <tofill>
+          release_name: <tofill>
+          draft: true
+          prerelease: false
+
+      - uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./my-artifact.zip
+          asset_name: my-artifact.zip
+          asset_content_type: application/zip
+
+      - uses: eregon/publish-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          release_id: ${{ steps.create_release.outputs.id }}
