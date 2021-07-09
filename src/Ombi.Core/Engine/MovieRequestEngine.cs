@@ -317,7 +317,7 @@ namespace Ombi.Core.Engine
 
             // TODO fix this so we execute this on the server
             var requests = sortOrder.Equals("asc", StringComparison.InvariantCultureIgnoreCase)
-                ? allRequests.ToList().OrderBy(x => x.RequestedDate).ToList()
+                ? allRequests.ToList().OrderBy(x => prop.GetValue(x)).ToList()
                 : allRequests.ToList().OrderByDescending(x => prop.GetValue(x)).ToList();
             var total = requests.Count();
             requests = requests.Skip(position).Take(count).ToList();
